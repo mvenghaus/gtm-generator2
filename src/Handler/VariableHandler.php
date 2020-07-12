@@ -4,6 +4,7 @@ namespace Handler;
 
 use Google_Service_TagManager;
 use Helper\GoogleServiceTagManagerHelper;
+use Psr\Log\LoggerInterface;
 use Reader\ProjectReader;
 use Reader\VariableReader;
 
@@ -17,22 +18,27 @@ class VariableHandler
 	private $googleServiceTagManagerHelper;
 	/** @var VariableReader */
 	private $variableReader;
+	/** @var LoggerInterface */
+	private $logger;
 
 	/**
 	 * @param Google_Service_TagManager $googleServiceTagManager
 	 * @param GoogleServiceTagManagerHelper $googleServiceTagManagerHelper
 	 * @param ProjectReader $projectReader
 	 * @param VariableReader $variableReader
+	 * @param LoggerInterface $logger
 	 */
 	public function __construct(Google_Service_TagManager $googleServiceTagManager,
 	                            GoogleServiceTagManagerHelper $googleServiceTagManagerHelper,
 	                            ProjectReader $projectReader,
-	                            VariableReader $variableReader)
+	                            VariableReader $variableReader,
+	                            LoggerInterface $logger)
 	{
 		$this->googleServiceTagManager = $googleServiceTagManager;
 		$this->projectReader = $projectReader;
 		$this->googleServiceTagManagerHelper = $googleServiceTagManagerHelper;
 		$this->variableReader = $variableReader;
+		$this->logger = $logger;
 	}
 
 	public function handle()
@@ -54,7 +60,7 @@ class VariableHandler
 			{
 				if ($variableList[$variableName]['notes'] != $variableHash)
 				{
-					echo $variableName . ' -> update' . PHP_EOL;
+					$this->logger->debug('variable update', ['name' => $variableName]);
 
 					$this->googleServiceTagManager->accounts_containers_workspaces_variables->update(
 						$this->googleServiceTagManagerHelper->getParent() . '/variables/' . $variableList[$variableName]['variableId'],
@@ -62,12 +68,11 @@ class VariableHandler
 					);
 				} else
 				{
-					echo $variableName . ' -> nothing to do' . PHP_EOL;
+					$this->logger->debug('variable skip', ['name' => $variableName]);
 				}
 			} else
 			{
-
-				echo $variableName . ' -> create' . PHP_EOL;
+				$this->logger->debug('variable create', ['name' => $variableName]);
 
 				$this->googleServiceTagManager->accounts_containers_workspaces_variables->create(
 					$this->googleServiceTagManagerHelper->getParent(),
@@ -80,14 +85,12 @@ class VariableHandler
 
 		foreach ($variableList as $variableData)
 		{
-			echo $variableData['name'] . ' -> delete' . PHP_EOL;
-			echo $this->googleServiceTagManagerHelper->getParent() . '/variables/' . $variableData['variableId'] . PHP_EOL;
+			$this->logger->debug('variable delete', ['name' => $variableData['name']]);
 
 			$this->googleServiceTagManager->accounts_containers_workspaces_variables->delete(
 				$this->googleServiceTagManagerHelper->getParent() . '/variables/' . $variableData['variableId']
 			);
 		}
-		die('bla');
 	}
 
 	private function getVariableList()

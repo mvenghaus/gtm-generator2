@@ -4,9 +4,10 @@ namespace Handler;
 
 use Google_Service_TagManager;
 use Helper\GoogleServiceTagManagerHelper;
+use Provider\TriggerProvider;
+use Psr\Log\LoggerInterface;
 use Reader\ProjectReader;
 use Reader\TagReader;
-use Reader\VariableReader;
 use Renderer\TagRenderer;
 
 class TagHandler
@@ -21,6 +22,10 @@ class TagHandler
 	private $tagReader;
 	/** @var TagRenderer */
 	private $tagRenderer;
+	/** @var LoggerInterface */
+	private $logger;
+	/** @var TriggerProvider */
+	private $triggerProvider;
 
 	/**
 	 * @param Google_Service_TagManager $googleServiceTagManager
@@ -28,38 +33,88 @@ class TagHandler
 	 * @param ProjectReader $projectReader
 	 * @param TagReader $tagReader
 	 * @param TagRenderer $tagRenderer
+	 * @param TriggerProvider $triggerProvider
+	 * @param LoggerInterface $logger
 	 */
 	public function __construct(Google_Service_TagManager $googleServiceTagManager,
 	                            GoogleServiceTagManagerHelper $googleServiceTagManagerHelper,
 	                            ProjectReader $projectReader,
 	                            TagReader $tagReader,
-	                            TagRenderer $tagRenderer)
+	                            TagRenderer $tagRenderer,
+	                            TriggerProvider $triggerProvider,
+	                            LoggerInterface $logger)
 	{
 		$this->googleServiceTagManager = $googleServiceTagManager;
 		$this->projectReader = $projectReader;
 		$this->googleServiceTagManagerHelper = $googleServiceTagManagerHelper;
 		$this->tagReader = $tagReader;
 		$this->tagRenderer = $tagRenderer;
+		$this->logger = $logger;
+		$this->triggerProvider = $triggerProvider;
 	}
 
 	public function handle()
 	{
-		// $tagList = $this->getTabList();
+		$tagList = $this->getTagList();
 		foreach ($this->projectReader->getTags() as $tagName => $tagSettings)
 		{
 			$tagItems = $this->tagReader->loadTagItemsByName($tagName);
 			foreach ($tagItems as $tagItem)
 			{
+				$tagName = $tagItem['name'];
 
+				$firingTriggerId = $this->triggerProvider->getByName($tagName)['triggerId'];
+
+				$tagContent = $this->tagRenderer->render(json_encode($tagItem), $tagSettings);
+				$tagHash = md5(sprintf('%s#%s', $tagContent, $firingTriggerId));
+				$tagItem = json_decode($tagContent, JSON_OBJECT_AS_ARRAY);
+
+				$tag = new \Google_Service_TagManager_Tag();
+				$tag->setName($tagName);
+				$tag->setType($tagItem['type']);
+				$tag->setParameter($tagItem['parameter']);
+				$tag->setNotes($tagHash);
+				$tag->setFiringTriggerId($firingTriggerId);
+
+				if (isset($tagList[$tagName]))
+				{
+					if ($tagList[$tagName]['notes'] != $tagHash)
+					{
+						$this->logger->debug('tag update', ['name' => $tagName]);
+
+						$this->googleServiceTagManager->accounts_containers_workspaces_tags->update(
+							$this->googleServiceTagManagerHelper->getParent() . '/tags/' . $tagList[$tagName]['tagId'],
+							$tag
+						);
+					} else
+					{
+						$this->logger->debug('tag skip', ['name' => $tagName]);
+					}
+				} else
+				{
+					$this->logger->debug('tag create', ['name' => $tagName]);
+
+					$this->googleServiceTagManager->accounts_containers_workspaces_tags->create(
+						$this->googleServiceTagManagerHelper->getParent(),
+						$tag
+					);
+				}
+
+				unset($tagList[$tagName]);
 			}
-			print_r($tagItems);
-			exit;
 		}
-		//print_r($tagList);
-		exit;
+
+		foreach ($tagList as $tagData)
+		{
+			$this->logger->debug('tag delete', ['name' => $tagData['name']]);
+
+			$this->googleServiceTagManager->accounts_containers_workspaces_tags->delete(
+				$this->googleServiceTagManagerHelper->getParent() . '/tags/' . $tagData['tagId']
+			);
+		}
 	}
 
-	private function getTabList()
+	private function getTagList()
 	{
 		$tagList = $this->googleServiceTagManager->accounts_containers_workspaces_tags->listAccountsContainersWorkspacesTags($this->googleServiceTagManagerHelper->getParent());
 

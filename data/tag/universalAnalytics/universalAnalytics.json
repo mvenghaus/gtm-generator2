@@ -49,7 +49,7 @@
 		],
 		"fingerprint": "",
 		"firingTriggerId": [
-			"<<TRIGGER All Pages>>"
+			"{{Page Type}}='All Pages'"
 		],
 		"tagFiringOption": "ONCE_PER_EVENT",
 		"parentFolderId": "<<FOLDER Universal Analytics>>"
@@ -83,7 +83,7 @@
 		],
 		"fingerprint": "",
 		"firingTriggerId": [
-			"<<TRIGGER Purchase>>"
+			"{{Page Type}}='Purchase'"
 		],
 		"tagFiringOption": "ONCE_PER_EVENT",
 		"parentFolderId": "<<FOLDER Universal Analytics>>"
@@ -137,7 +137,7 @@
 		],
 		"fingerprint": "",
 		"firingTriggerId": [
-			"<<TRIGGER 404 Not found>>"
+			"{{Page Type}}='notfound'"
 		],
 		"tagFiringOption": "ONCE_PER_EVENT",
 		"parentFolderId": "<<FOLDER Universal Analytics>>"
@@ -166,7 +166,7 @@
 		],
 		"fingerprint": "",
 		"firingTriggerId": [
-			"<<TRIGGER All Pages>>"
+			"{{Page Type}}='All Pages'"
 		],
 		"tagFiringOption": "ONCE_PER_EVENT",
 		"parentFolderId": "<<FOLDER Universal Analytics>>"

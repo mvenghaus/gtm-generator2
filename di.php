@@ -2,12 +2,21 @@
 
 namespace DI;
 
+use Psr\Log\LoggerInterface;
+
 $containerBuilder = new ContainerBuilder();
 
 $containerBuilder->addDefinitions([
 
-	\Google_Service_TagManager::class => function ()
-	{
+	LoggerInterface::class => function () {
+
+		$logger = new \Monolog\Logger('standard');
+		$logger->pushHandler(new \Monolog\Handler\StreamHandler('php://stdout'));
+
+		return $logger;
+	},
+
+	\Google_Service_TagManager::class => function () {
 		$client = new \Google_Client();
 		$client->setApplicationName('gtm generator2');
 		$client->setAuthConfig(__DIR__ . '/etc/google_client_credentials.json');
