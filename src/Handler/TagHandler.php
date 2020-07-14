@@ -64,9 +64,10 @@ class TagHandler
 				$tagName = $tagItem['name'];
 
 				$firingTriggerId = $this->getFiringTiggerId($tagItem);
+				$blockingTriggerId = $this->getBlockingTriggerId($tagItem);
 
 				$tagContent = $this->tagRenderer->render(json_encode($tagItem), $tagSettings);
-				$tagHash = md5(sprintf('%s#%s', $tagContent, $firingTriggerId));
+				$tagHash = md5(sprintf('%s#%s#%s', $tagContent, $firingTriggerId, implode(',', $blockingTriggerId)));
 				$tagItem = json_decode($tagContent, JSON_OBJECT_AS_ARRAY);
 
 				$tag = new \Google_Service_TagManager_Tag();
@@ -75,6 +76,7 @@ class TagHandler
 				$tag->setParameter($tagItem['parameter']);
 				$tag->setNotes($tagHash);
 				$tag->setFiringTriggerId($firingTriggerId);
+				$tag->setBlockingTriggerId($blockingTriggerId);
 
 				if (isset($tagList[$tagName]))
 				{
@@ -136,6 +138,18 @@ class TagHandler
 		}
 
 		return $this->triggerProvider->getByName($tagItem['name'])['triggerId'];
+	}
+
+	private function getBlockingTriggerId($tagItem)
+	{
+		$blockingTriggerIds = $tagItem['blockingTriggerId'] ?? [];
+		$list = [];
+		foreach ($blockingTriggerIds as $blockingTriggerId)
+		{
+			$list[] = $this->triggerProvider->getByName($blockingTriggerId)['triggerId'];
+		}
+
+		return $list;
 	}
 
 }

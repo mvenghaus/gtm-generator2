@@ -17,8 +17,8 @@
       "{{Page Type}}='All Pages'"
     ],
     "blockingTriggerId": [
-      "<<TRIGGER Product>>",
-      "<<TRIGGER Purchase>>"
+      "Perfect Audience - Product",
+      "Perfect Audience - Purchase"
     ],
     "parentFolderId": "<<FOLDER Perfect Audience>>",
     "tagFiringOption": "ONCE_PER_EVENT"

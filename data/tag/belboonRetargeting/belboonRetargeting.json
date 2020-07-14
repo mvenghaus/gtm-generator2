@@ -19,7 +19,7 @@
 		],
 		"fingerprint": "",
 		"firingTriggerId": [
-			"{{Page Type='Home'}}"
+			"{{Page Type}}='Home'"
 		],
 		"parentFolderId": "<<FOLDER Belboon Retargeting>>",
 		"tagFiringOption": "ONCE_PER_EVENT"
