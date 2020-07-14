@@ -63,7 +63,7 @@ class TagHandler
 			{
 				$tagName = $tagItem['name'];
 
-				$firingTriggerId = $this->triggerProvider->getByName($tagName)['triggerId'];
+				$firingTriggerId = $this->getFiringTiggerId($tagItem);
 
 				$tagContent = $this->tagRenderer->render(json_encode($tagItem), $tagSettings);
 				$tagHash = md5(sprintf('%s#%s', $tagContent, $firingTriggerId));
@@ -125,6 +125,17 @@ class TagHandler
 		}
 
 		return $tags;
+	}
+
+	private function getFiringTiggerId($tagItem): int
+	{
+		$tagFiringTriggerId = $tagItem['firingTriggerId'][0] ?? '';
+		if (!empty($tagFiringTriggerId) && mb_strtoupper($tagFiringTriggerId, 'UTF-8') === $tagFiringTriggerId)
+		{
+			return $this->triggerProvider->getByName($tagFiringTriggerId)['triggerId'];
+		}
+
+		return $this->triggerProvider->getByName($tagItem['name'])['triggerId'];
 	}
 
 }

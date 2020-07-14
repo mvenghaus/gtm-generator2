@@ -20,4 +20,9 @@ class DirectoryHelper
 		return $this->getDataDir() . 'tag/';
 	}
 
+	public function getTriggerDir()
+	{
+		return $this->getDataDir() . 'trigger/';
+	}
+
 }

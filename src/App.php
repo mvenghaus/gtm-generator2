@@ -37,7 +37,7 @@ class App
 	{
 		$this->projectReader->loadFile(__DIR__ . '/../projects/inklammern/www.inklammern.de.json');
 
-		$this->variableHandler->handle();
+		// $this->variableHandler->handle();
 		$this->triggerHandler->handle();
 		$this->tagHandler->handle();
 	}

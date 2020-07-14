@@ -7,6 +7,7 @@ use Helper\GoogleServiceTagManagerHelper;
 use Psr\Log\LoggerInterface;
 use Reader\ProjectReader;
 use Reader\TagReader;
+use Reader\TriggerReader;
 
 class TriggerHandler
 {
@@ -18,20 +19,26 @@ class TriggerHandler
 	private $projectReader;
 	/** @var TagReader */
 	private $tagReader;
+	/** @var TriggerReader */
+	private $triggerReader;
 	/** @var LoggerInterface */
 	private $logger;
+	/** @var array */
+	private $triggerList;
 
 	/**
 	 * @param Google_Service_TagManager $googleServiceTagManager
 	 * @param GoogleServiceTagManagerHelper $googleServiceTagManagerHelper
 	 * @param ProjectReader $projectReader
 	 * @param TagReader $tagReader
+	 * @param TriggerReader $triggerReader
 	 * @param LoggerInterface $logger
 	 */
 	public function __construct(Google_Service_TagManager $googleServiceTagManager,
 	                            GoogleServiceTagManagerHelper $googleServiceTagManagerHelper,
 	                            ProjectReader $projectReader,
 	                            TagReader $tagReader,
+	                            TriggerReader $triggerReader,
 	                            LoggerInterface $logger)
 	{
 
@@ -39,12 +46,21 @@ class TriggerHandler
 		$this->googleServiceTagManagerHelper = $googleServiceTagManagerHelper;
 		$this->projectReader = $projectReader;
 		$this->tagReader = $tagReader;
+		$this->triggerReader = $triggerReader;
 		$this->logger = $logger;
 	}
 
 	public function handle()
 	{
-		$triggerList = $this->getTriggerList();
+		$this->triggerList = $this->getTriggerList();
+
+		$this->handleTagTrigger();
+		$this->handleFixedTrigger();
+		$this->deleteOldTrigger();
+	}
+
+	private function handleTagTrigger()
+	{
 		foreach ($this->projectReader->getTags() as $tagName => $tagSettings)
 		{
 			$tagItems = $this->tagReader->loadTagItemsByName($tagName);
@@ -53,7 +69,7 @@ class TriggerHandler
 				$params = $this->parseParams($tagItem['firingTriggerId'][0] ?? '');
 
 				$triggerName = $tagItem['name'];
-				$triggerHash = md5(sprintf('%s#%s', $tagName, json_encode($params)));
+				$triggerHash = md5(sprintf('%s#%s', $triggerName, json_encode($params)));
 
 				$trigger = new \Google_Service_TagManager_Trigger();
 				$trigger->setName($triggerName);
@@ -62,35 +78,31 @@ class TriggerHandler
 				$trigger->setCustomEventFilter($this->createCustomEventFilter($tagName));
 				$trigger->setFilter($this->createFilterFromParams($params));
 
-				if (isset($triggerList[$triggerName]))
-				{
-					if ($triggerList[$triggerName]['notes'] != $triggerHash)
-					{
-						$this->logger->debug('trigger update', ['name' => $triggerName]);
-
-						$this->googleServiceTagManager->accounts_containers_workspaces_triggers->update(
-							$this->googleServiceTagManagerHelper->getParent() . '/triggers/' . $triggerList[$triggerName]['triggerId'],
-							$trigger
-						);
-					} else
-					{
-						$this->logger->debug('trigger skip', ['name' => $triggerName]);
-					}
-				} else
-				{
-					$this->logger->debug('trigger create', ['name' => $triggerName]);
-
-					$this->googleServiceTagManager->accounts_containers_workspaces_triggers->create(
-						$this->googleServiceTagManagerHelper->getParent(),
-						$trigger
-					);
-				}
-
-				unset($triggerList[$triggerName]);
+				$this->saveTrigger($trigger);
 			}
 		}
+	}
 
-		foreach ($triggerList as $triggerData)
+	private function handleFixedTrigger()
+	{
+		foreach ($this->triggerReader->getAll() as $triggerData)
+		{
+			$triggerName = $triggerData['name'];
+			$triggerHash = md5(sprintf('%s#%s', $triggerName, json_encode($triggerData['customEventFilter'])));
+
+			$trigger = new \Google_Service_TagManager_Trigger();
+			$trigger->setName($triggerName);
+			$trigger->setType('custom_event');
+			$trigger->setNotes($triggerHash);
+			$trigger->setCustomEventFilter($triggerData['customEventFilter']);
+
+			$this->saveTrigger($trigger);
+		}
+	}
+
+	private function deleteOldTrigger()
+	{
+		foreach ($this->triggerList as $triggerData)
 		{
 			$this->logger->debug('trigger delete', ['name' => $triggerData['name']]);
 
@@ -98,6 +110,38 @@ class TriggerHandler
 				$this->googleServiceTagManagerHelper->getParent() . '/triggers/' . $triggerData['triggerId']
 			);
 		}
+	}
+
+	private function saveTrigger(\Google_Service_TagManager_Trigger $trigger)
+	{
+		$triggerName = $trigger->getName();
+		$triggerHash = $trigger->getNotes();
+
+		if (isset($this->triggerList[$triggerName]))
+		{
+			if ($this->triggerList[$triggerName]['notes'] != $triggerHash)
+			{
+				$this->logger->debug('trigger update', ['name' => $triggerName]);
+
+				$this->googleServiceTagManager->accounts_containers_workspaces_triggers->update(
+					$this->googleServiceTagManagerHelper->getParent() . '/triggers/' . $this->triggerList[$triggerName]['triggerId'],
+					$trigger
+				);
+			} else
+			{
+				$this->logger->debug('trigger skip', ['name' => $triggerName]);
+			}
+		} else
+		{
+			$this->logger->debug('trigger create', ['name' => $triggerName]);
+
+			$this->googleServiceTagManager->accounts_containers_workspaces_triggers->create(
+				$this->googleServiceTagManagerHelper->getParent(),
+				$trigger
+			);
+		}
+
+		unset($this->triggerList[$triggerName]);
 	}
 
 	private function getTriggerList()
