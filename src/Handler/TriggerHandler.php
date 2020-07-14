@@ -66,7 +66,13 @@ class TriggerHandler
 			$tagItems = $this->tagReader->loadTagItemsByName($tagName);
 			foreach ($tagItems as $tagItem)
 			{
-				$params = $this->parseParams($tagItem['firingTriggerId'][0] ?? '');
+				$firingTriggerId = $tagItem['firingTriggerId'][0];
+				if (mb_strtoupper($firingTriggerId, 'UTF-8') === $firingTriggerId)
+				{
+					continue;
+				}
+
+				$params = $this->parseParams($firingTriggerId ?? '');
 
 				$triggerName = $tagItem['name'];
 				$triggerHash = md5(sprintf('%s#%s', $triggerName, json_encode($params)));
