@@ -27,12 +27,13 @@ class GenerateCommand extends Command
 	{
 		$this
 			->setName('generate')
-			->setDescription('generate and update via api');
+			->setDescription('generate and update via api')
+			->addArgument('file', InputArgument::REQUIRED, 'config file');
 	}
 
 	protected function execute(InputInterface $input, OutputInterface $output)
 	{
-		$this->container->get(\App::class)->build();
+		$this->container->get(\App::class)->build($input->getArgument('file'));
 
 		return 0;
 	}
