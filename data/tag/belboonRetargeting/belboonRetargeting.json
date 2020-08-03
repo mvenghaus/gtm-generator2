@@ -19,7 +19,7 @@
 		],
 		"fingerprint": "",
 		"firingTriggerId": [
-			"{{Page Type}}='Home'"
+			"{{Page Type}}='home'"
 		],
 		"parentFolderId": "<<FOLDER Belboon Retargeting>>",
 		"tagFiringOption": "ONCE_PER_EVENT"
@@ -44,7 +44,7 @@
 		],
 		"fingerprint": "",
 		"firingTriggerId": [
-			"{{Page Type}}='Category'"
+			"{{Page Type}}='category'"
 		],
 		"parentFolderId": "<<FOLDER Belboon Retargeting>>",
 		"tagFiringOption": "ONCE_PER_EVENT"
@@ -69,7 +69,7 @@
 		],
 		"fingerprint": "",
 		"firingTriggerId": [
-			"{{Page Type}}='Product'"
+			"{{Page Type}}='product'"
 		],
 		"parentFolderId": "<<FOLDER Belboon Retargeting>>",
 		"tagFiringOption": "ONCE_PER_EVENT"
@@ -94,7 +94,7 @@
 		],
 		"fingerprint": "",
 		"firingTriggerId": [
-			"{{Page Type}}='Cart'"
+			"{{Page Type}}='cart'"
 		],
 		"parentFolderId": "<<FOLDER Belboon Retargeting>>",
 		"tagFiringOption": "ONCE_PER_EVENT"
@@ -119,7 +119,7 @@
 		],
 		"fingerprint": "",
 		"firingTriggerId": [
-			"{{Page Type}}='Purchase'"
+			"{{Page Type}}='purchase'"
 		],
 		"parentFolderId": "<<FOLDER Belboon Retargeting>>",
 		"tagFiringOption": "ONCE_PER_EVENT"

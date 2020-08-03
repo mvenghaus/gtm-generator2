@@ -202,7 +202,7 @@ class TriggerHandler
 		{
 			$name = trim($name);
 			$value = $results[2][$key] ?? '';
-			if ($name == '{{Page Type}}' && $value == 'All Pages')
+			if ($name == '{{Page Type}}' && $value == 'ALL PAGES')
 			{
 				continue;
 			}

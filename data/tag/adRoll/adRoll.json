@@ -19,7 +19,7 @@
 		],
 		"fingerprint": "",
 		"firingTriggerId": [
-			"{{Page Type}}='All Pages'"
+			"{{Page Type}}='ALL PAGES'"
 		],
 		"parentFolderId": "<<FOLDER Adroll>>",
 		"tagFiringOption": "ONCE_PER_EVENT"

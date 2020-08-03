@@ -24,7 +24,7 @@
 		],
 		"fingerprint": "",
 		"firingTriggerId": [
-			"{{Page Type}}='All Pages'"
+			"{{Page Type}}='ALL PAGES'"
 		],
 		"tagFiringOption": "ONCE_PER_EVENT",
 		"parentFolderId": "<<FOLDER Adwords Remarketing Tag>>"

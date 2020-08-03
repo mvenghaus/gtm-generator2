@@ -14,7 +14,7 @@
     ],
     "fingerprint": "",
     "firingTriggerId": [
-      "{{Page Type}}='All Pages'"
+      "{{Page Type}}='ALL PAGES'"
     ],
     "blockingTriggerId": [
       "Perfect Audience - Product",
@@ -43,7 +43,7 @@
     ],
     "fingerprint": "",
     "firingTriggerId": [
-      "{{Page Type}}='Product'"
+      "{{Page Type}}='product'"
     ],
     "parentFolderId": "<<FOLDER Perfect Audience>>",
     "tagFiringOption": "ONCE_PER_EVENT"
@@ -73,7 +73,7 @@
     ],
     "fingerprint": "",
     "firingTriggerId": [
-      "{{Page Type}}='Purchase'"
+      "{{Page Type}}='purchase'"
     ],
     "parentFolderId": "<<FOLDER Perfect Audience>>",
     "tagFiringOption": "ONCE_PER_EVENT"
